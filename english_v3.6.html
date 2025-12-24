@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>英単語☆20分トレーナー — v3.6（復習から開始／復習はフラッシュ方式）</title>
+<style>
+:root{ --pink:#ff69b4; --star:#ffd700; --bg:#f7f7fb; --ink:#222; --accent:#4a90e2; --card:#ffffff; --good:#2ecc71; --bad:#e74c3c; }
+body{font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; background:var(--bg); color:var(--ink); margin:0;}
+header{padding:16px; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(90deg, var(--pink), var(--star)); color:#000;}
+main{max-width:920px; margin:24px auto; padding:0 12px;}
+.card{background:var(--card); border-radius:16px; box-shadow:0 6px 16px rgba(0,0,0,.08); padding:16px;}
+.buttons{display:flex; gap:12px; flex-wrap:wrap; justify-content:center;}
+button{border:none; border-radius:12px; padding:14px 20px; font-size:1.05rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.1);}
+.accent{background:var(--accent); color:#fff;} .ghost{background:#eee;}
+.flash{font-size:2.4rem; text-align:center; padding:24px 12px; cursor:pointer;}
+.meaning{font-size:1.2rem; text-align:center; color:#444; min-height:1.6em;}
+.tiny{font-size:.85rem; color:#555; text-align:center;}
+.tag{display:inline-block; background:#eef; color:#334; padding:4px 8px; border-radius:999px; margin-left:8px; font-size:.85rem;}
+.progress{font-size:.95rem; text-align:center; margin-top:8px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>英単語☆20分トレーナー（v3.6）</h1>
+  <div id="timer">20:00</div>
+</header>
+<main>
+  <div class="card" id="setup">
+    <h2>今日のメニュー</h2>
+    <p>① <strong>昨日の復習（フラッシュ方式）</strong> → ② 4択クイズ（混在・正解後1秒で自動） → ③ フラッシュカード（おぼえた！3回連続で終了）</p>
+    <div class="buttons">
+      <button type="button" class="accent" id="startBtn">学習スタート（20分）</button>
+      <button type="button" class="ghost" id="skipReviewBtn">復習をスキップしてクイズへ</button>
+    </div>
+    <p class="tiny">復習は「おぼえた！／わからない」で進めます。<br>復習ルール：初回で「おぼえた！」ならその単語はクリア。もし「わからない」を押したら、<strong>3回連続で「おぼえた！」</strong>でクリア。</p>
+  </div>
+
+  <div class="card" id="reviewFlash" style="display:none;">
+    <h2>① 昨日の復習（フラッシュ方式）</h2>
+    <div class="flash" id="revWord" title="タップで意味を表示/非表示"></div>
+    <div class="meaning" id="revMeaning"></div>
+    <div class="progress" id="revProgress"></div>
+    <div class="buttons">
+      <button type="button" class="accent" id="revTtsBtn">発音</button>
+      <button type="button" id="revRememberBtn" class="accent">おぼえた！</button>
+      <button type="button" id="revDontKnowBtn" class="ghost">わからない</button>
+    </div>
+    <p class="tiny">※意味は最初は非表示。単語タップで表示/非表示。<br>ルール：初回で「おぼえた！」なら即クリア。途中で「わからない」を押した語は<strong>3回連続</strong>で「おぼえた！」するとクリア。</p>
+  </div>
+
+  <div class="card quiz" id="quiz" style="display:none;">
+    <h2>② 4択クイズ <span id="modeTag" class="tag"></span></h2>
+    <div class="meaning"><span id="quizPrompt"></span>：<span id="quizStem"></span></div>
+    <div id="quizOptions"></div>
+    <div class="buttons"><button type="button" id="nextQuizBtn" class="ghost" disabled>次の問題へ（自動1秒）</button></div>
+    <p id="quizHint" class="tiny"></p>
+  </div>
+
+  <div class="card" id="flashCard" style="display:none;">
+    <h2>③ フラッシュカード（10語）</h2>
+    <div class="flash" id="flashWord" title="タップで意味を表示/非表示"></div>
+    <div class="meaning" id="flashMeaning"></div>
+    <div class="progress" id="flashProgress"></div>
+    <div class="buttons">
+      <button type="button" class="accent" id="ttsBtn">発音</button>
+      <button type="button" id="rememberBtn" class="accent">おぼえた！</button>
+      <button type="button" id="dontKnowBtn" class="ghost">わからない</button>
+    </div>
+    <p class="tiny">※意味は最初は非表示。各単語は「おぼえた！」を<strong>3回連続</strong>で押すと終了します。</p>
+  </div>
+</main>
+<script type="application/json" id="wordsData">[{"word": "have", "meaning": "持っている"}, {"word": "like", "meaning": "好きだ"}, {"word": "come", "meaning": "来る"}, {"word": "play", "meaning": "（スポーツやゲームを）する、遊ぶ"}, {"word": "walk", "meaning": "歩く"}, {"word": "run", "meaning": "走る"}, {"word": "stand", "meaning": "立つ"}, {"word": "sit", "meaning": "すわる"}, {"word": "study", "meaning": "勉強する"}, {"word": "work", "meaning": "働く"}, {"word": "read", "meaning": "読む"}, {"word": "write", "meaning": "書く"}, {"word": "speak", "meaning": "話す"}, {"word": "live", "meaning": "住んでいる"}, {"word": "go", "meaning": "行く"}, {"word": "eat", "meaning": "食べる"}, {"word": "drink", "meaning": "飲む"}, {"word": "sport", "meaning": "スポーツ"}, {"word": "baseball", "meaning": "野球"}, {"word": "tennis", "meaning": "テニス"}, {"word": "soccer", "meaning": "サッカー"}, {"word": "basketball", "meaning": "バスケットボール"}, {"word": "volleyball", "meaning": "バレーボール"}, {"word": "table tennis", "meaning": "卓球"}, {"word": "team", "meaning": "チーム"}, {"word": "member", "meaning": "メンバー、一員"}, {"word": "player", "meaning": "選手、プレーヤー"}, {"word": "fan", "meaning": "ファン"}, {"word": "game", "meaning": "試合、ゲーム"}, {"word": "video", "meaning": "ビデオ、動画"}, {"word": "movie", "meaning": "映画"}, {"word": "piano", "meaning": "ピアノ"}, {"word": "guitar", "meaning": "ギター"}, {"word": "violin", "meaning": "バイオリン"}, {"word": "instrument", "meaning": "器具、楽器"}, {"word": "breakfast", "meaning": "朝食"}, {"word": "lunch", "meaning": "昼食"}, {"word": "dinner", "meaning": "夕食"}, {"word": "food", "meaning": "食べ物"}, {"word": "water", "meaning": "水"}, {"word": "rice", "meaning": "米（ごはん）、稲"}, {"word": "bread", "meaning": "パン"}, {"word": "toast", "meaning": "トースト"}, {"word": "sandwich", "meaning": "サンドイッチ"}, {"word": "hamburger", "meaning": "ハンバーガー"}, {"word": "pizza", "meaning": "ピザ"}, {"word": "tea", "meaning": "紅茶、茶"}, {"word": "coffee", "meaning": "コーヒー"}, {"word": "milk", "meaning": "牛乳"}, {"word": "juice", "meaning": "ジュース"}, {"word": "fruit", "meaning": "果物"}, {"word": "vegetable", "meaning": "野菜"}, {"word": "potato", "meaning": "じゃがいも"}, {"word": "tomato", "meaning": "トマト"}, {"word": "apple", "meaning": "りんご"}, {"word": "orange", "meaning": "オレンジ"}, {"word": "egg", "meaning": "卵"}, {"word": "salad", "meaning": "サラダ"}, {"word": "cake", "meaning": "ケーキ"}, {"word": "look", "meaning": "見る"}, {"word": "listen", "meaning": "聞く"}, {"word": "see", "meaning": "見える"}, {"word": "hear", "meaning": "聞こえる"}, {"word": "watch", "meaning": "じっと見る"}, {"word": "know", "meaning": "知っている"}, {"word": "want", "meaning": "ほしい"}, {"word": "love", "meaning": "大好きである"}, {"word": "help", "meaning": "手伝う、助ける"}, {"word": "use", "meaning": "使う"}, {"word": "meet", "meaning": "会う"}, {"word": "talk", "meaning": "話す、会話する"}, {"word": "practice", "meaning": "練習する"}, {"word": "enjoy", "meaning": "楽しむ"}, {"word": "start", "meaning": "始める、始まる"}, {"word": "visit", "meaning": "訪問する"}, {"word": "friend", "meaning": "友達"}, {"word": "family", "meaning": "家族"}, {"word": "father", "meaning": "父"}, {"word": "mother", "meaning": "母"}, {"word": "parent", "meaning": "親"}, {"word": "brother", "meaning": "兄、弟"}, {"word": "sister", "meaning": "姉、妹"}, {"word": "grandfather", "meaning": "祖父"}, {"word": "grandmother", "meaning": "祖母"}, {"word": "child", "meaning": "子ども"}, {"word": "boy", "meaning": "男の子"}, {"word": "girl", "meaning": "女の子"}, {"word": "uncle", "meaning": "おじ"}, {"word": "aunt", "meaning": "おば"}, {"word": "cousin", "meaning": "いとこ"}, {"word": "school", "meaning": "学校"}, {"word": "teacher", "meaning": "教師"}, {"word": "student", "meaning": "生徒"}, {"word": "junior high school", "meaning": "中学校"}, {"word": "class", "meaning": "授業、クラス"}, {"word": "classroom", "meaning": "教室"}, {"word": "gym", "meaning": "体育館"}, {"word": "gate", "meaning": "門"}, {"word": "restroom", "meaning": "トイレ"}, {"word": "classmate", "meaning": "クラスメイト"}, {"word": "subject", "meaning": "教科"}, {"word": "Japanese", "meaning": "日本語、日本人"}, {"word": "English", "meaning": "英語"}, {"word": "math", "meaning": "数学"}, {"word": "science", "meaning": "理科、科学"}, {"word": "history", "meaning": "歴史"}, {"word": "music", "meaning": "音楽"}, {"word": "P.E.", "meaning": "体育"}, {"word": "homework", "meaning": "宿題"}, {"word": "textbook", "meaning": "教科書"}, {"word": "get", "meaning": "手に入れる"}, {"word": "take", "meaning": "取る、持っていく"}, {"word": "bring", "meaning": "持ってくる、連れていく"}, {"word": "make", "meaning": "作る"}, {"word": "stay", "meaning": "滞在する、とどまる"}, {"word": "leave", "meaning": "去る、出発する"}, {"word": "wait", "meaning": "待つ"}, {"word": "cook", "meaning": "料理する"}, {"word": "wash", "meaning": "洗う"}, {"word": "clean", "meaning": "そうじする、きれいにする"}, {"word": "drive", "meaning": "運転する"}, {"word": "swim", "meaning": "泳ぐ"}, {"word": "sing", "meaning": "歌う"}, {"word": "dance", "meaning": "踊る"}, {"word": "open", "meaning": "開く"}, {"word": "close", "meaning": "閉じる"}, {"word": "get up", "meaning": "起きる"}, {"word": "play the piano", "meaning": "ピアノをひく"}, {"word": "ate", "meaning": "食べた"}, {"word": "sang", "meaning": "歌った"}, {"word": "went", "meaning": "行った"}, {"word": "was", "meaning": "だった（isの過去）"}, {"word": "were", "meaning": "だった（areの過去）"}]</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  // ====== 共通ユーティリティ ======
+  const raw = document.getElementById('wordsData').textContent;
+  var words = []; try { words = JSON.parse(raw); } catch(e) { console.error('単語JSONの読み込みに失敗', e); words = []; }
+  function shuffle(arr){ var a = arr.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  const STORE_KEY = 'winter_vocab_v1'; var store = {};
+  try{ store = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch(e){ store = {}; }
+  if(!store.boxes){ store = { boxes: {}, streak: 0, stars: 0, wrongByDate: {}, lastStudyDate: null }; }
+  function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
+  function getBox(word){ return store.boxes[word] || 1; }
+  function setBox(word, val){ store.boxes[word] = Math.max(1, Math.min(5, val)); save(); }
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function yesterdayStr(){ var d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+
+  // ====== タイマー ======
+  var timerId = null; var seconds = 20*60;
+  function formatTime(s){ var m = Math.floor(s/60); var sec = (s%60).toString().padStart(2,'0'); return m+':'+sec; }
+  function startTimer(){ seconds = 20*60; document.getElementById('timer').textContent = formatTime(seconds); timerId = setInterval(function(){ seconds--; document.getElementById('timer').textContent = formatTime(seconds); if(seconds<=0){ clearInterval(timerId); alert('20分終了！おつかれさま'); } }, 1000); }
+
+  // ====== ① 昨日の復習（フラッシュ方式） ======
+  var revQueue = []; var revIndex = 0; var revShowMeaning = false; var revSession = {};
+  function buildReviewFlash(){
+    var y = yesterdayStr(); var list = (store.wrongByDate[y]||[]);
+    // ユニーク化
+    var seen = {}; revQueue = []; list.forEach(function(w){ if(!seen[w]){ seen[w]=true; revQueue.push(w); } });
+    revIndex = 0; revSession = {};
+    revQueue.forEach(function(word){ revSession[word] = { required: 1, streak: 0, done: false }; });
+  }
+  function revRemaining(){ var c=0; revQueue.forEach(function(w){ if(!revSession[w].done) c++; }); return c; }
+  function revFindNext(from){ var n=revQueue.length; for(var i=1;i<=n;i++){ var idx=(from+i)%n; var w=revQueue[idx]; if(!revSession[w].done) return idx; } return -1; }
+  function renderReview(reset){ if(reset){ revShowMeaning=false; }
+    if(!revQueue.length){ // 復習なし→クイズへ
+      document.getElementById('reviewFlash').style.display='none'; document.getElementById('quiz').style.display='block'; buildQuiz(); return; }
+    var word = revQueue[revIndex]; var sess = revSession[word];
+    document.getElementById('revWord').textContent = word;
+    var meaning = (words.find(function(w){return w.word===word;})||{}).meaning || '';
+    document.getElementById('revMeaning').textContent = revShowMeaning ? meaning : '（タップで意味を表示）';
+    document.getElementById('revProgress').textContent = '必要: ' + sess.required + '　連続: ' + sess.streak + '/' + sess.required + '　残り: ' + revRemaining();
+    if(revRemaining()===0){ // 復習完了→クイズへ
+      alert('復習完了！つぎはクイズへ'); document.getElementById('reviewFlash').style.display='none'; document.getElementById('quiz').style.display='block'; buildQuiz(); }
+  }
+  function nextReview(){ var nextIdx = revFindNext(revIndex); if(nextIdx>=0){ revIndex = nextIdx; renderReview(true); } else { renderReview(true); } }
+  function revSpeak(text){ try{ var utt = new SpeechSynthesisUtterance(text); utt.lang='en-US'; speechSynthesis.speak(utt); } catch(e){} }
+  document.getElementById('revWord').addEventListener('click', function(){ revShowMeaning = !revShowMeaning; renderReview(false); });
+  document.getElementById('revTtsBtn').addEventListener('click', function(){ var w = revQueue[revIndex]; if(w) revSpeak(w); });
+  document.getElementById('revRememberBtn').addEventListener('click', function(){ var word = revQueue[revIndex]; if(!word) return; var sess = revSession[word]; sess.streak = (sess.streak||0) + 1; setBox(word, getBox(word)+1); store.stars++; save(); if(sess.streak >= sess.required){ sess.done = true; } nextReview(); });
+  document.getElementById('revDontKnowBtn').addEventListener('click', function(){ var word = revQueue[revIndex]; if(!word) return; var sess = revSession[word]; sess.required = 3; sess.streak = 0; setBox(word, 1); var d=todayStr(); if(!store.wrongByDate[d]) store.wrongByDate[d]=[]; store.wrongByDate[d].push(word); save(); nextReview(); });
+
+  // ====== ② 4択クイズ（混在＋正解後1秒自動） ======
+  var quizQueue = []; var quizIndex = 0;
+  function buildQuiz(){
+    var base = shuffle(words).slice(0,10);
+    quizQueue = base.map(function(w){ return { word: w.word, meaning: w.meaning, mode: (Math.random()<0.5?'JA2EN':'EN2JA') }; });
+    quizIndex = 0; renderQuiz(true);
+  }
+  function renderQuiz(resetNext){ var w = quizQueue[quizIndex]; var nextBtn = document.getElementById('nextQuizBtn'); if(resetNext){ nextBtn.disabled = true; }
+    if(!w){ document.getElementById('quizStem').textContent='（終了）'; nextBtn.disabled = false; return; }
+    var modeTag = document.getElementById('modeTag'); var promptEl = document.getElementById('quizPrompt'); var stemEl = document.getElementById('quizStem'); var box = document.getElementById('quizOptions'); box.innerHTML='';
+    document.getElementById('quizHint').textContent = '正解すると1秒後に自動で次へ進むよ';
+    if(w.mode==='JA2EN'){
+      modeTag.textContent='日本語→英語'; promptEl.textContent='次の日本語の意味に合う英単語'; stemEl.textContent = w.meaning;
+      var opts = shuffle([w.word].concat(shuffle(words).slice(0,3).map(function(x){return x.word;})));
+      opts.forEach(function(o){ var div=document.createElement('button'); div.type='button'; div.style.display='block'; div.style.margin='6px 0'; div.textContent=o; div.onclick=function(){ handleAnswer(o===w.word, w, div, box); }; box.appendChild(div); });
+    } else {
+      modeTag.textContent='英語→日本語'; promptEl.textContent='次の英単語の意味はどれ？'; stemEl.textContent = w.word;
+      var opts2 = shuffle([w.meaning].concat(shuffle(words).slice(0,3).map(function(x){return x.meaning;})));
+      opts2.forEach(function(o){ var div=document.createElement('button'); div.type='button'; div.style.display='block'; div.style.margin='6px 0'; div.textContent=o; div.onclick=function(){ handleAnswer(o===w.meaning, w, div, box); }; box.appendChild(div); });
+    }
+  }
+  function handleAnswer(correct, w, btn, box){ var nextBtn = document.getElementById('nextQuizBtn'); if(correct){ btn.style.background='#d1f7e1'; setBox(w.word, getBox(w.word)+1); store.stars++; save(); Array.prototype.forEach.call(box.children, function(c){ c.disabled=true; }); nextBtn.disabled = false; document.getElementById('quizHint').textContent = '正解！1秒後に次の問題へ'; setTimeout(function(){ if(quizIndex + 1 >= quizQueue.length){ document.getElementById('quiz').style.display='none'; document.getElementById('flashCard').style.display='block'; buildFlashQueue(); renderFlash(true); } else { quizIndex++; renderQuiz(true); } }, 1000); } else { btn.style.background='#ffdede'; btn.disabled = true; setBox(w.word, 1); var d=todayStr(); if(!store.wrongByDate[d]) store.wrongByDate[d]=[]; store.wrongByDate[d].push(w.word); save(); document.getElementById('quizHint').textContent = '惜しい！他の選択肢も試してみよう'; } }
+  document.getElementById('nextQuizBtn').addEventListener('click', function(){ if(quizIndex + 1 >= quizQueue.length){ document.getElementById('quiz').style.display='none'; document.getElementById('flashCard').style.display='block'; buildFlashQueue(); renderFlash(true); } else { quizIndex++; renderQuiz(true); } });
+
+  // ====== ③ フラッシュカード（おぼえた！3回で終了／10語） ======
+  var flashQueue = []; var currentIndex = 0; var showMeaning = false; var flashSession = {};
+  function pick10FromQuizOrBoxes(){ var picked = []; if(quizQueue && quizQueue.length){ var seen={}; quizQueue.forEach(function(q){ if(!seen[q.word]){ picked.push({word:q.word, meaning:q.meaning}); seen[q.word]=true; } }); } if(picked.length>10) picked = picked.slice(0,10); if(picked.length<10){ var byBox = [1,2,3,4,5].map(function(b){ return words.filter(function(w){ return getBox(w.word)===b; }); }); var pool = []; byBox.forEach(function(list){ pool.push.apply(pool, shuffle(list)); }); for(var i=0;i<pool.length && picked.length<10;i++){ var w = pool[i]; if(!picked.some(function(x){return x.word===w.word;})) picked.push({word:w.word, meaning:w.meaning}); } } return picked; }
+  function buildFlashQueue(){ flashQueue = pick10FromQuizOrBoxes(); currentIndex = 0; flashSession = {}; flashQueue.forEach(function(w){ flashSession[w.word] = {streak:0, done:false}; }); }
+  function remainingCount(){ var c=0; flashQueue.forEach(function(w){ if(!flashSession[w.word].done) c++; }); return c; }
+  function findNextIndex(from){ var n=flashQueue.length; for(var i=1;i<=n;i++){ var idx=(from+i)%n; var w=flashQueue[idx]; if(!flashSession[w.word].done) return idx; } return -1; }
+  function renderFlash(reset){ if(reset){ showMeaning=false; } var w = flashQueue[currentIndex]; if(!w){ document.getElementById('flashWord').textContent = '完了！'; document.getElementById('flashMeaning').textContent = ''; document.getElementById('flashProgress').textContent = ''; return; } var s = (flashSession[w.word] && flashSession[w.word].streak) || 0; document.getElementById('flashWord').textContent = w.word; document.getElementById('flashMeaning').textContent = showMeaning ? w.meaning : '（タップで意味を表示）'; document.getElementById('flashProgress').textContent = '連続: ' + s + '/3　残り: ' + remainingCount() + '/10'; if(remainingCount()===0){ alert('フラッシュカード完了！おつかれさま'); document.getElementById('flashCard').style.display='none'; // 最後は復習画面へ（再確認用）
+      document.getElementById('reviewFlash').style.display='block'; buildReviewFlash(); renderReview(true); }
+  }
+  function nextFlash(){ var nextIdx = findNextIndex(currentIndex); if(nextIdx>=0){ currentIndex = nextIdx; renderFlash(true); } else { renderFlash(true); } }
+  function speak(text){ try{ var utt = new SpeechSynthesisUtterance(text); utt.lang='en-US'; speechSynthesis.speak(utt); } catch(e){} }
+  document.getElementById('flashWord').addEventListener('click', function(){ showMeaning = !showMeaning; renderFlash(false); });
+  document.getElementById('ttsBtn').addEventListener('click', function(){ var w = flashQueue[currentIndex]; if(w) speak(w.word); });
+  document.getElementById('rememberBtn').addEventListener('click', function(){ var w = flashQueue[currentIndex]; if(!w) return; var sess = flashSession[w.word]; sess.streak = (sess.streak||0) + 1; setBox(w.word, getBox(w.word)+1); store.stars++; save(); if(sess.streak >= 3){ sess.done = true; } nextFlash(); });
+  document.getElementById('dontKnowBtn').addEventListener('click', function(){ var w = flashQueue[currentIndex]; if(!w) return; var sess = flashSession[w.word]; sess.streak = 0; setBox(w.word, 1); var d=todayStr(); if(!store.wrongByDate[d]) store.wrongByDate[d]=[]; store.wrongByDate[d].push(w.word); save(); nextFlash(); });
+
+  // ====== スタート／スキップ ======
+  document.getElementById('startBtn').addEventListener('click', function(){ document.getElementById('setup').style.display='none'; startTimer(); buildReviewFlash(); document.getElementById('reviewFlash').style.display='block'; renderReview(true); });
+  document.getElementById('skipReviewBtn').addEventListener('click', function(){ document.getElementById('setup').style.display='none'; startTimer(); document.getElementById('quiz').style.display='block'; buildQuiz(); });
+});
+</script>
+</body>
+</html>
