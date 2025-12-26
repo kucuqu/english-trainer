@@ -145,9 +145,6 @@ document.addEventListener('DOMContentLoaded', function(){
   function handleAnswer(correct, w, btn, box){ var nextBtn = document.getElementById('nextQuizBtn'); if(correct){ btn.style.background='#d1f7e1'; setBox(w.word, getBox(w.word)+1); store.stars++; save(); Array.prototype.forEach.call(box.children, function(c){ c.disabled=true; }); nextBtn.disabled = false; document.getElementById('quizHint').textContent = '正解！1秒後に次の問題へ'; setTimeout(function(){ if(quizIndex + 1 >= quizQueue.length){ document.getElementById('quiz').style.display='none'; document.getElementById('flashCard').style.display='block'; buildFlashQueue(); renderFlash(true); } else { quizIndex++; renderQuiz(true); } }, 1000); } else { btn.style.background='#ffdede'; btn.disabled = true; setBox(w.word, 1); var d=todayStr(); if(!store.wrongByDate[d]) store.wrongByDate[d]=[]; store.wrongByDate[d].push(w.word); save(); document.getElementById('quizHint').textContent = '惜しい！他の選択肢も試してみよう'; } }
   document.getElementById('nextQuizBtn').addEventListener('click', function(){ if(quizIndex + 1 >= quizQueue.length){ document.getElementById('quiz').style.display='none'; document.getElementById('flashCard').style.display='block'; buildFlashQueue(); renderFlash(true); } else { quizIndex++; renderQuiz(true); } });
 
-
-<!-- ====== ③ フラッシュカード（おぼえた！3回で終了／10語） ====== -->
-
 <!-- ====== ③ フラッシュカード（おぼえた！3回で終了／10語） ====== -->
 <script>
   // ※この <script> ブロックは document.addEventListener('DOMContentLoaded', function(){ ... }); の中に置く
