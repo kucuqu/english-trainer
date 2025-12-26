@@ -288,8 +288,6 @@ document.addEventListener('DOMContentLoaded', function(){
   function speak(text){ try{ var utt = new SpeechSynthesisUtterance(text); utt.lang='en-US'; speechSynthesis.speak(utt); } catch(e){} }
   document.getElementById('flashWord').addEventListener('click', function(){ showMeaning = !showMeaning; renderFlash(false); });
   document.getElementById('ttsBtn').addEventListener('click', function(){ var w = flashQueue[currentIndex]; if(w) speak(w.word); });
-  document.getElementById('rememberBtn').addEventListener('click', function(){ var w = flashQueue[currentIndex]; if(!w) return; var sess = flashSession[w.word]; sess.streak = (sess.streak||0) + 1; setBox(w.word, getBox(w.word)+1); store.stars++; save(); if(sess.streak >= 3){ sess.done = true; } nextFlash(); });
-  document.getElementById('dontKnowBtn').addEventListener('click', function(){ var w = flashQueue[currentIndex]; if(!w) return; var sess = flashSession[w.word]; sess.streak = 0; setBox(w.word, 1); var d=todayStr(); if(!store.wrongByDate[d]) store.wrongByDate[d]=[]; store.wrongByDate[d].push(w.word); save(); nextFlash(); });
 
   // ====== スタート／スキップ ======
   document.getElementById('startBtn').addEventListener('click', function(){ document.getElementById('setup').style.display='none'; startTimer(); buildReviewFlash(); document.getElementById('reviewFlash').style.display='block'; renderReview(true); });
